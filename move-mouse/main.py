@@ -13,12 +13,11 @@ def collect_coords(coords):
                 coords.append((event.x, event.y))    
 
 click_time = 0.5
-def task(coords, event):
-    # while escape is not pressed
+def task(coords, event_event):
     mouse = Controller()
     while True:
         for coord in coords:
-            if event.is_set():
+            if event_event.is_set():
                 return
             
             sleep(click_time)
@@ -34,7 +33,7 @@ def main():
     print("""
     Start collecting coordinates by clicking on the screen.
     When you are done, press Ctrl+C to stop the collection of coordinates.
-    The last coordinate you clicked will be ignored, so click in the terminal before Ctrl+C.
+    The last coordinate you clicked will be ignored, this happens so you can click on the terminal to Ctrl+C.
     """)
 
     try:
@@ -46,7 +45,6 @@ def main():
             return
 
         coords.pop()
-        print("coords = ", coords)
 
     val = input(f"choose a time in seconds to wait between clicks. Default = {click_time}\n")
     try:
@@ -60,20 +58,18 @@ def main():
     If you want to stop, press ESC.
     """)
 
-    # while escape is not pressed
-    event = Event()
+    stop_event = Event()
     def on_press(key):
         if key == Key.esc:
             print("Stopping the program")
-            event.set()
+            stop_event.set()
             return False
 
-    thread = Thread(target=task, args=(coords, event))
+    thread = Thread(target=task, args=(coords, stop_event))
     thread.start()
     
     with Listener(on_press=on_press) as listener:
         listener.join()
-        return False
         
 if __name__ == '__main__':
     main()
