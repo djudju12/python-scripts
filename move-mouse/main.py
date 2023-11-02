@@ -1,39 +1,59 @@
-from pynput import mouse
-import sys
+from pynput.mouse import Controller, Button, Events
 from pynput.keyboard import Listener, Key
-from threading import Thread
+from threading import Thread, Event
 from time import sleep
 
 def collect_coords(coords):
-    with mouse.Events() as events:
+    with Events() as events:
         for event in events:
-            if isinstance(event, mouse.Events.Click) \
-                and event.button == mouse.Button.left \
+            if isinstance(event, Events.Click) \
+                and event.button == Button.left \
                 and event.pressed:
                 print(f"coords = {event.x, event.y} added to list")
                 coords.append((event.x, event.y))    
 
-def task(coords):
+click_time = 0.5
+def task(coords, event):
     # while escape is not pressed
+    mouse = Controller()
     while True:
         for coord in coords:
-            sleep(0.5)
+            if event.is_set():
+                return
+            
+            sleep(click_time)
             print(f"Moving mouse to {coord}")
-        # mouse.Controller().position = coord
+            mouse.position = coord
+            mouse.press(Button.left)
+            mouse.release(Button.left)
 
 def main():
+    global click_time
+    coords = []
+
     print("""
     Start collecting coordinates by clicking on the screen.
     When you are done, press Ctrl+C to stop the collection of coordinates.
     The last coordinate you clicked will be ignored, so click in the terminal before Ctrl+C.
     """)
-    coords = []
+
     try:
         collect_coords(coords)
     except KeyboardInterrupt:
         print("\nRemoving last coordinate")
+        if len(coords) <= 1:
+            print("Provided no coords. Exiting...")
+            return
+
         coords.pop()
         print("coords = ", coords)
+
+    val = input(f"choose a time in seconds to wait between clicks. Default = {click_time}\n")
+    try:
+        val = float(val)
+        click_time = val
+    except Exception:
+        pass
 
     print("""
     Now the program will start to repeat the coordinates you clicked.
@@ -41,24 +61,19 @@ def main():
     """)
 
     # while escape is not pressed
+    event = Event()
     def on_press(key):
         if key == Key.esc:
             print("Stopping the program")
-            sys.exit()
+            event.set()
             return False
 
+    thread = Thread(target=task, args=(coords, event))
+    thread.start()
+    
     with Listener(on_press=on_press) as listener:
-        thread = Thread(target=lambda: task(coords))
-        # thread.start()
-        thread.start()
         listener.join()
         return False
         
-    #     if kb.Controller().press(kb.Key.esc):
-    #         break
-        # for coord in coords:
-        #     print(f"Moving mouse to {coord}")
-        #     mouse.Controller().position = coord
-
 if __name__ == '__main__':
     main()
