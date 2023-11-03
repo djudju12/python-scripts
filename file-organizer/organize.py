@@ -55,6 +55,7 @@ def usage() -> None:
     print("Usage: organize [OPTIONS]")
     print("Options:")
     print("  -h, --help\t\tShow this message.")
+    print("  -v, --verbose\t\tLog information.")
     print("  -i, --init\t\tCreate a new config file.")
     print("  -a, --add\t\tAdd a entry to the config file.")
 
