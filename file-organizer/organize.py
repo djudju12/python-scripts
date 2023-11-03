@@ -3,10 +3,17 @@
 import yaml, os, glob, sys
 
 CONFIG_PATH="organizer.yaml"
-LOG_ACTIVE = True
+LOG_ACTIVE = False
 
 def main():
+    global LOG_ACTIVE
+    
     args = shift_args()
+    if "--verbose" in args or "-v" in args:
+        LOG_ACTIVE = True
+        save_remove(args, "--verbose")
+        save_remove(args, "-v")
+
     if len(args) > 0:
         match args[0]:
             case "-h" | "--help":
@@ -16,10 +23,10 @@ def main():
             case "-i" | "--init":
                 init_config()
                 return
+            
             case _: 
                 usage()
                 return
-
 
     config = read_config(CONFIG_PATH)
     for dir, file_patterns in config.items():
@@ -75,7 +82,7 @@ def init_config() -> None:
     
     with open(CONFIG_PATH, "w") as f:
         log(f"Creating new config file \"{CONFIG_PATH}\"")
-        yaml.dump({"Documents":"*.pdf"}, f)
+        yaml.dump({"Documents": ["*.pdf"]}, f)
 
 def read_config(path: str) -> dict[str, str]:
     # why yml and yaml? oh god
@@ -98,6 +105,12 @@ def read_config(path: str) -> dict[str, str]:
 def file_list(pathname: str) -> list[str]:
     for file in glob.glob(pathname):
         yield file
+
+def save_remove(list, item):
+    try:
+        list.remove(item)
+    except ValueError:
+        pass
 
 if __name__ == '__main__':
     main()
