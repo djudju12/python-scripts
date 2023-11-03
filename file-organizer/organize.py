@@ -11,7 +11,10 @@ def main():
         match args[0]:
             case "-i" | "--init":
                 init_config()
-                return 
+                return
+            case _: 
+                usage()
+                return
 
 
     config = read_config(CONFIG_PATH)
@@ -27,6 +30,12 @@ def main():
 def log(msg: str) -> None:
     if LOG_ACTIVE:
         print(msg)
+
+def usage() -> None:
+    print("Usage: python3 organize.py [OPTIONS]")
+    print("Options:")
+    print("  -i, --init\t\tCreate a new config file.")
+    # print("  -h, --help\t\tShow this message.")
 
 def shift_args() -> list[str]:
     if len(sys.argv) > 1:
