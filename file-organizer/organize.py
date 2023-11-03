@@ -9,6 +9,10 @@ def main():
     args = shift_args()
     if len(args) > 0:
         match args[0]:
+            case "-h" | "--help":
+                usage()
+                return
+            
             case "-i" | "--init":
                 init_config()
                 return
