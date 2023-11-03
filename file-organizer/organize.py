@@ -40,15 +40,15 @@ def main():
     config = read_config(CONFIG_PATH)
     for dir, file_patterns in config.items():
         if type(file_patterns) is not list:
-            log(f"Invalid config file. \"{dir}\" does not contains a list of paths.")
+            log(f"Invalid config file. \"{dir}\" does not contains a list of paths.", True)
             continue
         
         for pattern in file_patterns:
             for file in file_list(pattern):
                 move_file(file, dir)
 
-def log(msg: str) -> None:
-    if LOG_ACTIVE:
+def log(msg: str, active: bool = LOG_ACTIVE) -> None:
+    if active:
         print(msg)
 
 def usage() -> None:
@@ -90,8 +90,8 @@ def dir_exists(path: str) -> bool:
 
 def init_config() -> None:
     if path_exists(CONFIG_PATH):
-        log(f"Config file \"{CONFIG_PATH}\" already exists.")
-        if input("Want to overwrite? (y/n): ") != "y":
+        log(f"Config file \"{CONFIG_PATH}\" already exists.", True)
+        if input("Want to overwrite? (y/n): ").lower() != "y":
             exit(0)
 
     config = {"Documents": ["*.pdf"]}
@@ -103,7 +103,7 @@ def read_config(path: str) -> dict[str, str]:
     if path_not_exists(path):
         name, ext = os.path.splitext(path)
         if ext != ".yaml" and ext != ".yml":
-            log(f"Invalid config file. \"{path}\" is not a yaml file.")
+            log(f"Invalid config file. \"{path}\" is not a yaml file.", True)
             exit(1)
 
         # try again
@@ -124,11 +124,14 @@ def add_config(dir: str, paths: list[str], config_path: str = CONFIG_PATH) -> No
     config = read_config(config_path)
     for path in paths:
         if dir in config and path not in config[dir]:
+            log(f"Adding \"{path}\" to \"{dir}\"")
             config[dir].append(path)
         elif dir not in config:
+            log(f"Adding \"{path}\" to \"{dir}\"")
             config[dir] = [path]
         else:
-            return # its all good
+            log(f"\"{path}\" already exists in \"{dir}\"")
+            continue
 
     save_config(config, config_path)
 
