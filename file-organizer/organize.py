@@ -7,12 +7,12 @@ LOG_ACTIVE = False
 
 def main():
     global LOG_ACTIVE
-    
+
     args = shift_args()
     if "--verbose" in args or "-v" in args:
         LOG_ACTIVE = True
-        save_remove(args, "--verbose")
-        save_remove(args, "-v")
+        remove_anyway(args, "--verbose")
+        remove_anyway(args, "-v")
 
     if len(args) > 0:
         match args[0]:
@@ -106,7 +106,7 @@ def file_list(pathname: str) -> list[str]:
     for file in glob.glob(pathname):
         yield file
 
-def save_remove(list, item):
+def remove_anyway(list, item):
     try:
         list.remove(item)
     except ValueError:
