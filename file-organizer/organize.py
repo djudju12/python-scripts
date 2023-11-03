@@ -2,7 +2,7 @@
 
 import yaml, os, glob, sys
 
-CONFIG_PATH="organizer.yaml"
+CONFIG_PATH=".organizer.yaml"
 LOG_ACTIVE = False
 
 def main():
@@ -19,11 +19,11 @@ def main():
             case "-h" | "--help":
                 usage()
                 return
-            
+
             case "-i" | "--init":
                 init_config()
                 return
-            
+
             case "-a" | "--add":
                 args = shift_args(args)
                 if len(args) < 2:
@@ -33,7 +33,7 @@ def main():
                 add_config(dir=args[0], paths=args[1:])
                 return
 
-            case _: 
+            case _:
                 usage()
                 return
 
