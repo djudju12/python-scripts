@@ -20,19 +20,38 @@ def main():
             for file in file_list(pattern):
                 move_file(file, dir)
 
+def path_not_exists(path: str) -> bool:
+    return not os.path.exists(path)
+
+def file_exists(path: str) -> bool:
+    return os.path.exists(path) and os.path.isfile(path)
+
 def move_file(file: str, dst: str) -> None:
-    if not os.path.exists(dst):
+    if path_not_exists(dst):
         log(f"Dir \"{dst}\" does not exist. Creating...")
         os.mkdir(dst)
 
-    if os.path.exists(file) and os.path.isfile(file):
+    if file_exists(file):
         log(f"Moving {file} to {dst}")
         os.rename(file, f"{dst}/{file}")
 
+def dir_exists(path: str) -> bool:
+    return os.path.exists(path) and os.path.isdir(path)
+
 def read_config(path: str) -> dict[str, str]:
-    if not os.path.exists(path):
-        log(f"Config file \"{path}\" does not exist.")
-        exit(1)
+    # why yml and yaml? oh god
+    if path_not_exists(path):
+        name, ext = os.path.splitext(path)
+        if ext != "yaml" and ext != "yml":
+            log(f"Invalid config file. \"{path}\" is not a yaml file.")
+            exit(1)
+
+        # try again
+        ext = "yml" if ext == "yaml" else "yaml"
+        path = f"{name}.{ext}"
+        if path_not_exists(path):
+            log(f"Config file \"{path}\" does not exist.")
+            exit(1)
 
     with open(path, "r") as f:
         return yaml.safe_load(f)
