@@ -8,7 +8,7 @@ LOG_ACTIVE = False
 def main():
     global LOG_ACTIVE
 
-    args = shift_args()
+    args = shift_args(sys.argv)
     if "--verbose" in args or "-v" in args:
         LOG_ACTIVE = True
         remove_anyway(args, "--verbose")
@@ -24,6 +24,15 @@ def main():
                 init_config()
                 return
             
+            case "-a" | "--add":
+                args = shift_args(args)
+                if len(args) < 2:
+                    usage_add()
+                    return
+
+                add_config(dir=args[0], paths=args[1:])
+                return
+
             case _: 
                 usage()
                 return
@@ -43,14 +52,18 @@ def log(msg: str) -> None:
         print(msg)
 
 def usage() -> None:
-    print("Usage: python3 organize.py [OPTIONS]")
+    print("Usage: organize [OPTIONS]")
     print("Options:")
+    print("  -h, --help\t\tShow this message.")
     print("  -i, --init\t\tCreate a new config file.")
-    # print("  -h, --help\t\tShow this message.")
+    print("  -a, --add\t\tAdd a entry to the config file.")
 
-def shift_args() -> list[str]:
-    if len(sys.argv) > 1:
-        return sys.argv[1:]
+def usage_add() -> None:
+    print("Usage: organize -a | --add [DIR] [PATH_PATTERN...]")
+
+def shift_args(args) -> list[str]:
+    if len(args) > 1:
+        return args[1:]
     return []
 
 def path_exists(path: str) -> bool:
@@ -79,10 +92,10 @@ def init_config() -> None:
         log(f"Config file \"{CONFIG_PATH}\" already exists.")
         if input("Want to overwrite? (y/n): ") != "y":
             exit(0)
-    
-    with open(CONFIG_PATH, "w") as f:
-        log(f"Creating new config file \"{CONFIG_PATH}\"")
-        yaml.dump({"Documents": ["*.pdf"]}, f)
+
+    config = {"Documents": ["*.pdf"]}
+    log(f"Creating new config file \"{CONFIG_PATH}\"")
+    save_config(config, CONFIG_PATH)
 
 def read_config(path: str) -> dict[str, str]:
     # why yml and yaml? oh god
@@ -101,6 +114,22 @@ def read_config(path: str) -> dict[str, str]:
 
     with open(path, "r") as f:
         return yaml.safe_load(f)
+
+def save_config(config: dict[str, str], path: str) -> None:
+    with open(path, "w") as f:
+        yaml.dump(config, f)
+
+def add_config(dir: str, paths: list[str], config_path: str = CONFIG_PATH) -> None:
+    config = read_config(config_path)
+    for path in paths:
+        if dir in config and path not in config[dir]:
+            config[dir].append(path)
+        elif dir not in config:
+            config[dir] = [path]
+        else:
+            return # its all good
+
+    save_config(config, config_path)
 
 def file_list(pathname: str) -> list[str]:
     for file in glob.glob(pathname):

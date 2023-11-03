@@ -1,2 +1,7 @@
 Documents:
 - '*.pdf'
+- '*.docx'
+Images:
+- '*.png'
+- '*.jpge'
+- '*.oi'
