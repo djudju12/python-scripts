@@ -107,7 +107,11 @@ def gof(total):
 def main():
     global BOARD, INIT_BOARD
     while True:
-        gof(TOTAL_GENS)
+        try:
+            gof(TOTAL_GENS)
+        except KeyboardInterrupt:
+            clear()
+            return
         BOARD = INIT_BOARD
 
 
